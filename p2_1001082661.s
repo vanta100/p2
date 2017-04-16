@@ -20,13 +20,16 @@ writeloop:
     B   writeloop           @ branch to next loop iteration
 writedone:
     MOV R0, #0              @ initialze index variable
+    MOV R3, #0
 readloop:
     CMP R0, #10            @ check to see if we are done iterating
     BEQ readdone            @ exit loop if done
     LDR R1, =a              @ get address of a
     LSL R2, R0, #2          @ multiply index*4 to get array offset
     ADD R2, R1, R2          @ R2 now has the element address
-    LDR R1, [R2]            @ read the array at address 
+    LDR R1, [R2]            @ read the array at address
+    CMP R1, R3
+    BLGT _max
     PUSH {R0}               @ backup register before printf
     PUSH {R1}               @ backup register before printf
     PUSH {R2}               @ backup register before printf
@@ -39,36 +42,13 @@ readloop:
     ADD R0, R0, #1          @ increment index
     B   readloop            @ branch to next loop iteration
 readdone:
-	MOV R0, #0
-	MOV R3, #0
-test:
-    CMP R0, #10             @ check to see if we are done iterating  
-    BLEQ _printc
-    BEQ _exit
-    LDR R1, =a              @ get address of a
-    LSL R2, R0, #2          @ multiply index*4 to get array offset
-    ADD R2, R1, R2          @ R2 now has the element address
-    LDR R1, [R2]            @ read the array at address 
-    PUSH {R0}               @ backup register before printf
-    PUSH {R1}               @ backup register before printf
-    PUSH {R2}               @ backup register before printf 
-    PUSH {R3}     
-    CMP R3, R1
-    BLGT _max
-    POP {R3}
-    POP {R2}                @ restore register
-    POP {R1}                @ restore register
-    POP {R0}                @ restore register
-    ADD R0, R0, #1          @ increment index
-    B   test            @ branch to next loop iteration
-
-    
+	MOV R1, R3				@to print max
+	B _printc
+	
 _max:
 	PUSH {LR}
 	MOV R3, R1
-	MOV R1, R3
 	POP {PC}
-	
 
 _exit:  
     MOV R7, #4              @ write syscall, 4
@@ -81,11 +61,11 @@ _exit:
 
 _printc:
 
-    PUSH {LR}               @ store the return address
+    @PUSH {LR}               @ store the return address
     LDR R0, =max_str     @ R0 contains formatted string address
     BL printf               @ call printf
-    POP {PC}                @ restore the stack pointer and return
-    
+    @POP {PC}                @ restore the stack pointer and return
+    B _exit
 _eh:
 	PUSH {LR}
 	LDR R0, =eh
