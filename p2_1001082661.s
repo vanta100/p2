@@ -17,7 +17,7 @@ writeloop:
     POP {R2}                @ restore element address
     STR R0, [R2]            @ write the address of a[i] to a[i]
     MOV R5, R0
-    @BL  _mod_unsigned
+    BL  _mod_unsigned
     POP {R0}                @ restore iterator
     ADD R0, R0, #1          @ increment index
     B   writeloop           @ branch to next loop iteration
@@ -61,18 +61,18 @@ readdone:
 _mod_unsigned:
     cmp R6, R5          @ check to see if R1 >= R2
     MOVHS R0, R5        @ swap R1 and R2 if R2 > R1
-    MOVHS R5, R2        @ swap R1 and R2 if R2 > R1
-    MOVHS R2, R0        @ swap R1 and R2 if R2 > R1
+    MOVHS R5, R6        @ swap R1 and R2 if R2 > R1
+    MOVHS R6, R0        @ swap R1 and R2 if R2 > R1
     MOV R0, #0          @ initialize return value
     B _modloopcheck     @ check to see if
     
 _modloop:
 	ADD R0, R0, #1  @ increment R0
-    SUB R5, R2, R5  @ subtract R2 from R1
+    SUB R6, R5, R6  @ subtract R2 from R1
 _modloopcheck:
-    CMP R5, R2      @ check for loop termination
+    CMP R5, R6      @ check for loop termination
     BHS _modloop    @ continue loop if R1 >= R2
-    MOV R0, R5          @ move remainder to R0
+    MOV R0, R6          @ move remainder to R0
 	MOV PC, LR          @ return
 
 _exit:  
