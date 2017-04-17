@@ -20,7 +20,6 @@ writeloop:
     B   writeloop           @ branch to next loop iteration
 writedone:
     MOV R0, #0              @ initialze index variable
-    MOV R4, #0
     MOV R5, #1000
 readloop:
     CMP R0, #10            @ check to see if we are done iterating
@@ -29,28 +28,26 @@ readloop:
     LSL R2, R0, #2          @ multiply index*4 to get array offset
     ADD R2, R1, R2          @ R2 now has the element address
     LDR R1, [R2]            @ read the array at address
-    CMP R1, R3
+    CMP R1, R4
+    MOVGT R4, R1
     PUSH {R0}               @ backup register before printf
     PUSH {R1}               @ backup register before printf
     PUSH {R2}               @ backup register before printf
-    PUSH {R3}
+   
     MOV R2, R1              @ move array value to R2 for printf
     MOV R1, R0              @ move array index to R1 for printf
     BL  _printf             @ branch to print procedure with return
-	MOVGT R4, R1
-	POP {R3}
+
+
     POP {R2}                @ restore register
     POP {R1}                @ restore register
     POP {R0}                @ restore register
     ADD R0, R0, #1          @ increment index
     B   readloop            @ branch to next loop iteration
 readdone:
+	MOV R1, R4
 	B _printc
 	
-_max:
-	PUSH {LR}
-	MOV R4, R1
-	POP {PC}
 
 _mod_unsigned:
 	MOV R1, R2
