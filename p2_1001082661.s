@@ -4,6 +4,7 @@
 main:
     BL _seedrand            @ seed random number generator with current time
     MOV R0, #0              @ initialze index variable
+    MOV R6, #1000
 writeloop:
     CMP R0, #10            @ check to see if we are done iterating
     BEQ writedone           @ exit loop if done
@@ -15,12 +16,14 @@ writeloop:
     BL _getrand             @ get a random number
     POP {R2}                @ restore element address
     STR R0, [R2]            @ write the address of a[i] to a[i]
+    MOV R5, R0
+    @BL  _mod_unsigned
     POP {R0}                @ restore iterator
     ADD R0, R0, #1          @ increment index
     B   writeloop           @ branch to next loop iteration
 writedone:
     MOV R0, #0              @ initialze index variable
-    MOV R5, #1000
+
 readloop:
     CMP R0, #10            @ check to see if we are done iterating
     BEQ readdone            @ exit loop if done
@@ -30,6 +33,8 @@ readloop:
     LDR R1, [R2]            @ read the array at address
     CMP R1, R4
     MOVGT R4, R1
+    CMP R1, R5
+    MOVLT R5, R1
     PUSH {R0}               @ backup register before printf
     PUSH {R1}               @ backup register before printf
     PUSH {R2}               @ backup register before printf
@@ -46,13 +51,15 @@ readloop:
     B   readloop            @ branch to next loop iteration
 readdone:
 	MOV R1, R4
-	B _printc
+	BL _printc
+	MOV R1, R5
+	BL _printx
+	B _exit
+	
 	
 
 _mod_unsigned:
-	MOV R1, R2
-	BL _eh
-    cmp R2, R5          @ check to see if R1 >= R2
+    cmp R6, R5          @ check to see if R1 >= R2
     MOVHS R0, R5        @ swap R1 and R2 if R2 > R1
     MOVHS R5, R2        @ swap R1 and R2 if R2 > R1
     MOVHS R2, R0        @ swap R1 and R2 if R2 > R1
@@ -79,11 +86,16 @@ _exit:
 
 _printc:
 
-    @PUSH {LR}               @ store the return address
+    PUSH {LR}               @ store the return address
     LDR R0, =max_str     @ R0 contains formatted string address
     BL printf               @ call printf
-    @POP {PC}                @ restore the stack pointer and return
-    B _exit
+    POP {PC}                @ restore the stack pointer and return
+_printx:
+	PUSH {LR}               @ store the return address
+    LDR R0, =min_str     @ R0 contains formatted string address
+    BL printf               @ call printf
+    POP {PC}                @ restore the stack pointer and return
+	
 _eh:
 	PUSH {LR}
 	LDR R0, =eh
