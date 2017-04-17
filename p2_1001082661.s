@@ -4,7 +4,6 @@
 main:
     BL _seedrand            @ seed random number generator with current time
     MOV R0, #0              @ initialze index variable
-    MOV R5, #1000
 writeloop:
     CMP R0, #10            @ check to see if we are done iterating
     BEQ writedone           @ exit loop if done
@@ -21,7 +20,7 @@ writeloop:
     B   writeloop           @ branch to next loop iteration
 writedone:
     MOV R0, #0              @ initialze index variable
-    MOV R3, #0
+    MOV R5, #1000
 readloop:
     CMP R0, #10            @ check to see if we are done iterating
     BEQ readdone            @ exit loop if done
@@ -30,26 +29,46 @@ readloop:
     ADD R2, R1, R2          @ R2 now has the element address
     LDR R1, [R2]            @ read the array at address
     CMP R1, R3
-    BLGT _max
     PUSH {R0}               @ backup register before printf
     PUSH {R1}               @ backup register before printf
     PUSH {R2}               @ backup register before printf
+   
     MOV R2, R1              @ move array value to R2 for printf
     MOV R1, R0              @ move array index to R1 for printf
     BL  _printf             @ branch to print procedure with return
+	BL _max
+	
     POP {R2}                @ restore register
     POP {R1}                @ restore register
     POP {R0}                @ restore register
     ADD R0, R0, #1          @ increment index
     B   readloop            @ branch to next loop iteration
 readdone:
-	MOV R1, R3				@to print max
 	B _printc
 	
 _max:
 	PUSH {LR}
-	MOV R3, R1
+	MOV R4, R1
 	POP {PC}
+
+_mod_unsigned:
+	MOV R1, R2
+	BL _eh
+    cmp R2, R5          @ check to see if R1 >= R2
+    MOVHS R0, R5        @ swap R1 and R2 if R2 > R1
+    MOVHS R5, R2        @ swap R1 and R2 if R2 > R1
+    MOVHS R2, R0        @ swap R1 and R2 if R2 > R1
+    MOV R0, #0          @ initialize return value
+    B _modloopcheck     @ check to see if
+    
+_modloop:
+	ADD R0, R0, #1  @ increment R0
+    SUB R5, R2, R5  @ subtract R2 from R1
+_modloopcheck:
+    CMP R5, R2      @ check for loop termination
+    BHS _modloop    @ continue loop if R1 >= R2
+    MOV R0, R5          @ move remainder to R0
+	MOV PC, LR          @ return
 
 _exit:  
     MOV R7, #4              @ write syscall, 4
