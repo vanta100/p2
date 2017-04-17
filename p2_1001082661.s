@@ -20,6 +20,7 @@ writeloop:
     B   writeloop           @ branch to next loop iteration
 writedone:
     MOV R0, #0              @ initialze index variable
+    MOV R4, #0
     MOV R5, #1000
 readloop:
     CMP R0, #10            @ check to see if we are done iterating
@@ -32,12 +33,12 @@ readloop:
     PUSH {R0}               @ backup register before printf
     PUSH {R1}               @ backup register before printf
     PUSH {R2}               @ backup register before printf
-   
+    PUSH {R3}
     MOV R2, R1              @ move array value to R2 for printf
     MOV R1, R0              @ move array index to R1 for printf
     BL  _printf             @ branch to print procedure with return
-	BL _max
-	
+	MOVGT R4, R1
+	POP {R3}
     POP {R2}                @ restore register
     POP {R1}                @ restore register
     POP {R0}                @ restore register
