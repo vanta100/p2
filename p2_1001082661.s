@@ -14,10 +14,11 @@ writeloop:
     PUSH {R0}               @ backup iterator before procedure call
     PUSH {R2}               @ backup element address before procedure call
     BL _getrand             @ get a random number
+    MOV R7, R0
+    BL  _mod_unsigned
     POP {R2}                @ restore element address
     STR R0, [R2]            @ write the address of a[i] to a[i]
     MOV R5, R0
-    BL  _mod_unsigned
     POP {R0}                @ restore iterator
     ADD R0, R0, #1          @ increment index
     B   writeloop           @ branch to next loop iteration
@@ -51,28 +52,29 @@ readloop:
     B   readloop            @ branch to next loop iteration
 readdone:
 	MOV R1, R4
-	BL _printc
+	BL _printmax
 	MOV R1, R5
-	BL _printx
+	BL _printmin
 	B _exit
 	
 	
 
 _mod_unsigned:
-    cmp R5, R6          @ check to see if R1 >= R2
-    MOVHS R0, R5        @ swap R1 and R2 if R2 > R1
-    MOVHS R5, R6        @ swap R1 and R2 if R2 > R1
+    cmp R6, R7          @ check to see if R1 >= R2
+    MOVHS R0, R7        @ swap R1 and R2 if R2 > R1
+    MOVHS R7, R6        @ swap R1 and R2 if R2 > R1
     MOVHS R6, R0        @ swap R1 and R2 if R2 > R1
     MOV R0, #0          @ initialize return value
     B _modloopcheck     @ check to see if
     
 _modloop:
 	ADD R0, R0, #1  @ increment R0
-    SUB R6, R5, R6  @ subtract R2 from R1
+    SUB R7, R7, R6  @ subtract R2 from R1
+ 
 _modloopcheck:
-    CMP R5, R6      @ check for loop termination
+    CMP R7, R6      @ check for loop termination
     BHS _modloop    @ continue loop if R1 >= R2
-    MOV R0, R6          @ move remainder to R0
+    MOV R0, R7          @ move remainder to R0
 	MOV PC, LR          @ return
 
 _exit:  
@@ -84,29 +86,20 @@ _exit:
     MOV R7, #1              @ terminate syscall, 1
     SWI 0                   @ execute syscall
 
-_printc:
+_printmax:
 
     PUSH {LR}               @ store the return address
     LDR R0, =max_str     @ R0 contains formatted string address
     BL printf               @ call printf
     POP {PC}                @ restore the stack pointer and return
-_printx:
+_printmin:
 	PUSH {LR}               @ store the return address
     LDR R0, =min_str     @ R0 contains formatted string address
     BL printf               @ call printf
     POP {PC}                @ restore the stack pointer and return
 	
-_eh:
-	PUSH {LR}
-	LDR R0, =eh
-	BL printf
-	POP {PC}
-    
-_assign:
-	PUSH {LR}
-	MOV R3, R2
-	POP {PC}
-     
+
+	
 _printf:
     PUSH {LR}               @ store the return address
     LDR R0, =printf_str     @ R0 contains formatted string address
@@ -138,4 +131,4 @@ debug_str:
 exit_str:       .ascii      "Terminating program.\n"
 max_str:		.asciz		"max: %d\n"
 min_str:		.asciz		"min: %d\n"
-eh		:		.asciz		"%d\n"
+
