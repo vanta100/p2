@@ -59,7 +59,7 @@ readdone:
 	
 
 _mod_unsigned:
-    cmp R6, R5          @ check to see if R1 >= R2
+    cmp R5, R6          @ check to see if R1 >= R2
     MOVHS R0, R5        @ swap R1 and R2 if R2 > R1
     MOVHS R5, R6        @ swap R1 and R2 if R2 > R1
     MOVHS R6, R0        @ swap R1 and R2 if R2 > R1
