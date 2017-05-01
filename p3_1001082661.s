@@ -23,7 +23,7 @@ main:
 alu:
 	PUSH {LR}
 	CMP R5, #0
-	MOVEQ R0, #0
+	MOVEQ R0, #1
 	POPEQ {PC}
 	
 	MOVLT R0,#0
@@ -34,24 +34,20 @@ alu:
 	POPEQ {PC}
 	
 	PUSH {R5}
-	PUSH {R0}
 	SUB R5,R5,R6
 	BL alu
-	POP {R0}
 	POP {R5}
 	
-	MOV R8,R0
 	
 	PUSH {R6}
 	PUSH {R0}
 	SUB R6,R6,#1
 	BL alu
-	POP {R0}
+	POP {R1}
 	POP {R6}
 	
-	MOV R9,R0
 	
-	ADD R0,R8,R9
+	ADD R0,R0,R1
 	POP {PC}	
 
 _eh:
