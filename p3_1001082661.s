@@ -2,48 +2,63 @@
 .func main
    
 main:
-	PUSH {R1}
+
     BL  _prompt             @ branch to prompt procedure with return
     BL  _scanf              @ branch to scanf procedure with return
-    MOV R1, R0 				@int n
-    POP {R1}
-    PUSH {R2}
+    MOV R5, R0 				@int n
+   
     BL	_prompt
     BL	_scanf2
-    MOV R2, R0 				@int m
-    POP {R2}
+    MOV R6, R0 				@int m
+    
     CMP R6,R5
     BLGT _exit
     BL	alu
     MOV R1, R0
-    MOV R2, R1
-    MOV R3, R2
+    MOV R2, R5
+    MOV R3, R6
     BL 	_printf            @ branch to print procedure with return
     B   main               @ branch to exit procedure with no return
 
 alu:
 	PUSH {LR}
-	CMP R1, #0
+	CMP R5, #0
 	MOVEQ R0, #0
 	POPEQ {PC}
 	
 	MOVLT R0,#0
 	POPLT {PC}
 	
-	CMP R2, #0
+	CMP R6, #0
 	MOVEQ R0, #0
 	POPEQ {PC}
 	
-	BL _else
+	PUSH {R5}
+	PUSH {R0}
+	SUB R5,R5,R6
+	BL alu
+	POP {R0}
+	POP {R5}
 	
-	@BL alu
-	POP {PC}
+	MOV R8,R0
 	
+	PUSH {R6}
+	PUSH {R0}
+	SUB R6,R6,#1
+	BL alu
+	POP {R0}
+	POP {R6}
+	
+	MOV R9,R0
+	
+	ADD R0,R8,R9
+	POP {PC}	
 
-_else:
-	PUSH {LR}
-	SUB R0,R1,R2
-	POP {PC}
+_eh:
+    MOV R8, LR              @ store LR since printf call overwrites
+    LDR R0, =format_str     @ R0 contains formatted string address
+    BL printf               @ call printf
+    MOV PC, R8              @ return
 
 _exit:  
     MOV R7, #4              @ write syscall, 4
