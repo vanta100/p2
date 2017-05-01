@@ -4,38 +4,43 @@
 main:
     BL  _prompt             @ branch to prompt procedure with return
     BL  _scanf              @ branch to scanf procedure with return
-    MOV R1, R0 				@int n
+    MOV R5, R0 				@int n
+   
     BL	_prompt
     BL	_scanf2
-    MOV R2, R0 				@int m
-    @BL	alu
-
+    MOV R6, R0 				@int m
+    
+    CMP R6,R5
+    BLGT _exit
+    BL	alu
+    MOV R1, R0
+    MOV R2, R5
+    MOV R3, R6
     BL 	_printf            @ branch to print procedure with return
     B   main               @ branch to exit procedure with no return
 
 alu:
 	PUSH {LR}
-	CMP R1, #0
+	CMP R5, #0
 	MOVEQ R0, #0
 	POPEQ {PC}
+	
 	MOVLT R0,#0
 	POPLT {PC}
-	CMP R2, #0
+	
+	CMP R6, #0
 	MOVEQ R0, #0
 	POPEQ {PC}
-	PUSH {R1}
-	PUSH {R2}
+	
 	BL _else
-	POP {R2}
-	POP {R1}
-	MOV R1, R0
-	MOV R2, R2
-	BL alu
+	
+	@BL alu
 	POP {PC}
+	
 
 _else:
 	PUSH {LR}
-	SUB R0,R1,R2
+	SUB R0,R5,R6
 	POP {PC}
 
 _exit:  
@@ -76,7 +81,7 @@ _scanf2:
     PUSH {LR}                @ store LR since scanf call overwrites
     SUB SP, SP, #4          @ make room on stack
     LDR R0, =format_str     @ R0 contains address of format string
-    MOV R2, SP              @ move SP to R1 to store entry on stack
+    MOV R1, SP              @ move SP to R1 to store entry on stack
     BL scanf                @ call scanf
     LDR R0, [SP]            @ load value at SP into R0
     ADD SP, SP, #4          @ restore the stack pointer
@@ -85,5 +90,5 @@ _scanf2:
 .data
 format_str:     .asciz      "%d"
 prompt_str:     .asciz      "Type a number and press enter: "
-printf_str:     .asciz      "The number entered was: %d\n"
+printf_str:     .asciz      "There are %d partitions of %d using integers up to %d.\n"
 exit_str:       .ascii      "Terminating program.\n"
