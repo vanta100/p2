@@ -2,33 +2,35 @@
 .func main
    
 main:
+	PUSH {R1}
     BL  _prompt             @ branch to prompt procedure with return
     BL  _scanf              @ branch to scanf procedure with return
-    MOV R5, R0 				@int n
-   
+    MOV R1, R0 				@int n
+    POP {R1}
+    PUSH {R2}
     BL	_prompt
     BL	_scanf2
-    MOV R6, R0 				@int m
-    
+    MOV R2, R0 				@int m
+    POP {R2}
     CMP R6,R5
     BLGT _exit
     BL	alu
     MOV R1, R0
-    MOV R2, R5
-    MOV R3, R6
+    MOV R2, R1
+    MOV R3, R2
     BL 	_printf            @ branch to print procedure with return
     B   main               @ branch to exit procedure with no return
 
 alu:
 	PUSH {LR}
-	CMP R5, #0
+	CMP R1, #0
 	MOVEQ R0, #0
 	POPEQ {PC}
 	
 	MOVLT R0,#0
 	POPLT {PC}
 	
-	CMP R6, #0
+	CMP R2, #0
 	MOVEQ R0, #0
 	POPEQ {PC}
 	
@@ -40,7 +42,7 @@ alu:
 
 _else:
 	PUSH {LR}
-	SUB R0,R5,R6
+	SUB R0,R1,R2
 	POP {PC}
 
 _exit:  
